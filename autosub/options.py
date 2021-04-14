@@ -246,7 +246,7 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
         '-sapi', '--speech-api',
         metavar=_('API_code'),
         default='gsv2',
-        choices=["gsv2", "gcsv1", "xfyun", "baidu"],
+        choices=["gsv2", "gcsv1", "xfyun", "baidu", "witai"],
         help=_("Choose which Speech-to-Text API to use. "
                "Currently support: "
                "gsv2: Google Speech V2 (https://github.com/gillesdemey/google-speech-v2). "
@@ -256,6 +256,8 @@ def get_cmd_parser():  # pylint: disable=too-many-statements
                "(https://www.xfyun.cn/doc/asr/voicedictation/API.html). "
                "baidu: Baidu Automatic Speech Recognition API "
                "(https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily) "
+               "witai: Wit.ai Speech Recognition API "
+               "(https://wit.ai/docs/http/20200513#post__speech_link) "
                "(arg_num = 1) (default: %(default)s)"))
 
     speech_group.add_argument(

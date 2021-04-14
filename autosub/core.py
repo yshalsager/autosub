@@ -24,6 +24,7 @@ import auditok
 # Any changes to the path and your own modules
 from autosub import api_baidu
 from autosub import api_google
+from autosub import api_wit_ai
 from autosub import api_xfyun
 from autosub import auditok_utils
 from autosub import sub_utils
@@ -692,6 +693,75 @@ def baidu_to_text(  # pylint: disable=too-many-locals, too-many-arguments,
         pool.join()
         print(_("Receive something unexpected:"))
         print(err_msg)
+        return None
+
+    return text_list
+
+
+def wit_ai_to_text(  # pylint: disable=too-many-locals,too-many-arguments,too-many-branches,too-many-statements
+        audio_fragments,
+        api_url,
+        api_key,
+        concurrency=constants.DEFAULT_CONCURRENCY,
+        is_keep=False,
+        result_list=None):
+    """
+    Give a list of short-term audio fragment files
+    and generate text_list from WIT AI speech-to-text api.
+    """
+    text_list = []
+    pool = multiprocessing.Pool(concurrency)
+
+    recognizer = api_wit_ai.WITAiAPI(
+        api_url=api_url,
+        api_key=api_key,
+        is_keep=is_keep,
+        is_full_result=result_list is not None)
+
+    print(_("\nSending short-term fragments to WIT AI API and getting result."))
+    widgets = [_("Speech-to-Text: "),
+               progressbar.Percentage(), ' ',
+               progressbar.Bar(), ' ',
+               progressbar.ETA()]
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=len(audio_fragments)).start()
+    try:
+        # get transcript
+        if result_list is None:
+            for i, transcript in enumerate(pool.imap(recognizer, audio_fragments)):
+                if transcript:
+                    text_list.append(transcript)
+                else:
+                    text_list.append("")
+                gc.collect(0)
+                pbar.update(i)
+        # get full result and transcript
+        else:
+            for i, result in enumerate(pool.imap(recognizer, audio_fragments)):
+                if result:
+                    result_list.append(result)
+                    transcript = \
+                        api_wit_ai.get_wit_ai_transcript(result)
+                    if transcript:
+                        text_list.append(result)
+                        continue
+                else:
+                    result_list.append("")
+                text_list.append("")
+                gc.collect(0)
+                pbar.update(i)
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+
+    except (KeyboardInterrupt, AttributeError) as error:
+        pbar.finish()
+        pool.terminate()
+        pool.join()
+
+        if error == AttributeError:
+            print(
+                _("Error: Connection error happened too many times.\nAll work done."))
+
         return None
 
     return text_list

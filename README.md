@@ -284,6 +284,11 @@ Supported formats below:
 - Supported
   - 16bit/16000Hz/mono PCM
 
+[Wit.ai Speech-to-Text API](https://wit.ai/docs/http/20200513#post__speech_link)
+
+- Supported
+  - 16bit/8000Hz/mono PCM
+
 Also, you can use the built-in audio pre-processing function though Google [doesn't recommend](https://cloud.google.com/speech-to-text/docs/best-practices) doing this. Honestly speaking, if your audio volume is not been standardized like too loud or too quiet, it's recommended to use some tools or just the built-in function to standardize it. The default [pre-processing commands](https://github.com/agermanidis/autosub/issues/40#issuecomment-509928060) depend on the ffmpeg-normalize and ffmpeg. The commands include three commands. The [first](https://trac.ffmpeg.org/wiki/AudioChannelManipulation) is for converting stereo to mono. The [second](https://superuser.com/questions/733061/reduce-background-noise-and-optimize-the-speech-from-an-audio-clip-using-ffmpeg) is for filtering out the sound not in the frequency of speech. The third is to normalize the audio to make sure it is not too loud or too quiet. If you are not satisfied with the default commands, you can also modified them yourself by input `-apc` option. Still, it currently only supports 24bit/44100Hz/mono FLAC format.
 
 If it is a subtitles file and you give the proper arguments, only translate it by py-googletrans.
@@ -648,6 +653,14 @@ command:
 autosub -sapi baidu -i input_file -sconf baidu_speech_config ...(other options)
 ```
 
+##### Wit.ai Speech-to-Text
+
+Use Wit.ai Speech-to-Text API key to transcribe.
+
+```
+autosub -i input_file -sapi witai -S lang_code -skey API_key ...(other options)
+```
+
 <escape><a href = "#TOC">&nbsp;↑&nbsp;</a></escape>
 
 ##### Translate Subtitles
@@ -795,6 +808,8 @@ Speech Options:
                         xfyun.cn/doc/asr/voicedictation/API.html). baidu:
                         Baidu Automatic Speech Recognition API
                         (https://ai.baidu.com/ai-doc/SPEECH/Vk38lxily)
+                        witai: Wit.ai Speech Recognition API
+                        (https://wit.ai/docs/http/20200513#post__speech_link)
                         (arg_num = 1) (default: gsv2)
   -skey key, --speech-key key
                         The API key for Google Speech-to-Text API. (arg_num =
@@ -1061,7 +1076,7 @@ I won't add any new features unless I'm less busy in the future. However, pull r
 
 [issue #13](https://github.com/BingLingGroup/autosub/issues/13)
 
-Same as above. Currently won't add it. You can use batch/powershell/bash to implement it.
+Same as above. Currently, won't add it. You can use batch/powershell/bash to implement it.
 
 Example for batch:(working at current directory)
 

@@ -299,6 +299,10 @@ def validate_speech_config(args):  # pylint: disable=too-many-branches, too-many
         elif "languageCode" in config_dict and config_dict["languageCode"]:
             args.speech_language = config_dict["languageCode"]
 
+    elif args.speech_api == "witai":
+        args.api_suffix = ".pcm"
+        args.api_sample_rate = 8000
+
     else:
         args.api_suffix = ".pcm"
         args.api_sample_rate = 16000
@@ -642,7 +646,10 @@ def fix_args(args):
                   "Now reset to {dmxcs}.").format(mxcs=args.max_continuous_silence,
                                                   dmxcs=constants.DEFAULT_CONTINUOUS_SILENCE))
             args.max_continuous_silence = constants.DEFAULT_CONTINUOUS_SILENCE
-
+    # Make sure witai convert command is correct
+    if args.speech_api == "witai":
+        args.api_suffix = ".pcm"
+        args.api_sample_rate = 8000
 
 def get_timed_text(
         is_empty_dropped,
@@ -1541,6 +1548,33 @@ def audio_or_video_prcs(  # pylint: disable=too-many-branches, too-many-statemen
             concurrency=args.speech_concurrency,
             is_keep=False,
             result_list=result_list)
+    elif args.speech_api == "witai":
+        # WIT AI API
+        if args.http_speech_api:
+            wit_api_url = f"http://{constants.WIT_AI_API_URL}"
+        else:
+            wit_api_url = f"https://{constants.WIT_AI_API_URL}"
+        wit_api_key = None
+        if 'WIT_AI_API_KEY' in os.environ:
+            print(_("Using the WIT_AI_API_KEY "
+                    "in the environment variables."))
+            wit_api_key = os.environ.get('WIT_AI_API_KEY')
+        if args.speech_key:
+            print(_("Use the API key "
+                    "given in the option \"-skey\"/\"--speech-key\"."))
+            wit_api_key = args.speech_key
+        if wit_api_key:
+            text_list = core.wit_ai_to_text(
+                audio_fragments=audio_fragments,
+                api_url=wit_api_url,
+                api_key=wit_api_key,
+                concurrency=args.speech_concurrency,
+                is_keep=args.keep,
+                result_list=result_list)
+        else:
+            print(_("No available WIT_AI_API_KEY. "
+                    "Use \"-skey\"/\"--speech-key\" to set one."))
+            text_list = None
     else:
         text_list = None
 
