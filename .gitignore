@@ -19,3 +19,5 @@ MANIFEST
 *.po~
 Pipfile
 *.lock
+venv/
+.python-version
